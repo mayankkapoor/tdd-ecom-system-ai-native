@@ -1,0 +1,34 @@
+version: '3.8'
+services:
+  web:
+    build: .
+    ports:
+      - "5000:5000" # Map host port 5000 to container port 5000
+    volumes:
+      # Mount current directory to /usr/src/app in container for live code changes
+      - .:/usr/src/app
+      # Persist instance folder data outside container
+      - ./instance:/usr/src/app/instance
+    environment:
+      # Use environment variables from .env file
+      - FLASK_ENV=development # Override Dockerfile default for dev
+      - FLASK_DEBUG=1
+      - DATABASE_URL=sqlite:///../instance/app.db # Ensure it uses the volume path
+      # Inherit SECRET_KEY from the host environment or define here
+      - SECRET_KEY=${SECRET_KEY}
+    env_file:
+      - .env # Load other vars from .env
+    # Add depends_on if adding a db service
+  # db: # Example PostgreSQL service (uncomment and configure if needed)
+  #   image: postgres:15
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data/
+  #   environment:
+  #     POSTGRES_USER: youruser
+  #     POSTGRES_PASSWORD: yourpassword
+  #     POSTGRES_DB: yourdbname
+  #   ports:
+  #     - "5432:5432"
+
+# volumes: # Define volume if using db service
+#   postgres_data:
