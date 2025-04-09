@@ -22,3 +22,6 @@ class TestingConfig(Config):
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:' # Use in-memory SQLite for tests
     WTF_CSRF_ENABLED = False # Disable CSRF forms validation in tests
     SECRET_KEY = 'test-secret-key' # Use a fixed key for tests
+    SERVER_NAME = 'localhost' # Required for url_for() in tests
+    APPLICATION_ROOT = '/' # Required for url_for() in tests
+    PREFERRED_URL_SCHEME = 'http' # Required for url_for() in tests

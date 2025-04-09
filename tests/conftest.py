@@ -24,3 +24,9 @@ def test_app():
 def test_client(test_app):
     """Create a test client for the app."""
     return test_app.test_client()
+
+@pytest.fixture(scope='function')
+def app_context(test_app):
+    """Create an application context."""
+    with test_app.app_context():
+        yield test_app
