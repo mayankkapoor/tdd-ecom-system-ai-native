@@ -1,4 +1,7 @@
 import os
+import click
+from app.models import User # Make sure User is imported
+from app import db         # Make sure db is imported
 from dotenv import load_dotenv
 
 # Load .env file from the project root
@@ -29,7 +32,30 @@ def make_shell_context():
   from app import models # Import models here if you want them in `flask shell`
   return {'db': db, 'User': models.User} # Add your models here later
 
+@app.cli.command("create-admin")
+@click.argument("username")
+@click.argument("password")
+@click.option('--email', default=None, help='Optional email address for the admin user.')
+def create_admin(username, password, email):
+    """Creates a new admin user."""
+    # Check if user already exists
+    if User.query.filter_by(username=username).first() is not None:
+        click.echo(f"Error: Username '{username}' already exists.")
+        return
+    if email and User.query.filter_by(email=email).first() is not None:
+         click.echo(f"Error: Email '{email}' already exists.")
+         return
 
+    user = User(username=username, email=email, role='admin') # Explicitly setting role=admin
+    user.set_password(password)
+    db.session.add(user)
+    try:
+        db.session.commit()
+        click.echo(f"Admin user '{username}' created successfully.")
+    except Exception as e:
+        db.session.rollback()
+        click.echo(f"Error creating user: {e}")
+        
 # The following is useful if you run `python run.py` directly,
 # but `flask run` is generally preferred as it uses the app factory.
 if __name__ == '__main__':
