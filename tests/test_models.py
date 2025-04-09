@@ -1,7 +1,8 @@
 import pytest
 from sqlalchemy.exc import IntegrityError
 from app import db
-from app.models import User
+from app.models import User, Product
+from decimal import Decimal
 
 # Use test_app fixture implicitly provided by pytest-flask via conftest.py
 # The app context is needed for db operations
@@ -68,4 +69,60 @@ def test_duplicate_email(test_app):
         with pytest.raises(IntegrityError):
             db.session.commit()
 
+        db.session.rollback()
+
+def test_product_creation(test_app):
+    """Test creating a product with valid data."""
+    with test_app.app_context():
+        p = Product(sku='TEST001', name='Test Product', price=Decimal('99.99'), stock_quantity=10)
+        db.session.add(p)
+        db.session.commit()
+
+        product_from_db = Product.query.filter_by(sku='TEST001').first()
+        assert product_from_db is not None
+        assert product_from_db.name == 'Test Product'
+        assert product_from_db.price == Decimal('99.99')
+        assert product_from_db.stock_quantity == 10
+        assert product_from_db.is_active is True # Default value
+        assert product_from_db.description is None # Default nullable
+
+def test_product_price_constraint(test_app):
+    """Test that price cannot be negative."""
+    with test_app.app_context():
+        p = Product(sku='NEGPRICE01', name='Negative Price', price=Decimal('-1.00'))
+        db.session.add(p)
+        with pytest.raises(IntegrityError): # Or specific DB error if known
+             db.session.commit()
+        db.session.rollback() # Clean up session
+
+def test_product_stock_constraint(test_app):
+    """Test that stock quantity cannot be negative."""
+    with test_app.app_context():
+        # Test direct creation with negative stock
+        p = Product(sku='NEGSTOCK01', name='Negative Stock', price=Decimal('10.00'), stock_quantity=-5)
+        db.session.add(p)
+        with pytest.raises(IntegrityError): # Or specific DB error
+             db.session.commit()
+        db.session.rollback()
+
+        # Test updating stock to negative (if using a helper method later)
+        # p_existing = Product(sku='UPDTEST01', name='Update Test', price=Decimal('5.00'), stock_quantity=2)
+        # db.session.add(p_existing)
+        # db.session.commit()
+        # with pytest.raises(ValueError): # Assuming helper raises ValueError
+        #     p_existing.adjust_stock(-3)
+        # db.session.rollback()
+
+
+def test_product_unique_sku(test_app):
+    """Test that product SKU must be unique."""
+    with test_app.app_context():
+        p1 = Product(sku='UNIQUE01', name='First Product', price=Decimal('1.00'))
+        db.session.add(p1)
+        db.session.commit()
+
+        p2 = Product(sku='UNIQUE01', name='Second Product', price=Decimal('2.00'))
+        db.session.add(p2)
+        with pytest.raises(IntegrityError):
+            db.session.commit()
         db.session.rollback()

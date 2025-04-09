@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head><title>View Product: {{ product.name }}</title></head>
+<body>
+    <h1>{{ product.name }} ({{ product.sku }})</h1>
+     {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %} <div class="alert-{{ category }}">{{ message }}</div> {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <p><strong>Description:</strong> {{ product.description | default('N/A') }}</p>
+    <p><strong>Price:</strong> {{ product.price }}</p>
+    <p><strong>Category:</strong> {{ product.category | default('N/A') }}</p>
+    <p><strong>Stock:</strong> {{ product.stock_quantity }}</p>
+    <p><strong>Active:</strong> {{ 'Yes' if product.is_active else 'No' }}</p>
+    {% if product.image_url %}<p><img src="{{ product.image_url }}" alt="{{ product.name }}" width="200"></p>{% endif %}
+    <hr>
+    <p>
+        <a href="{{ url_for('products.edit_product', sku=product.sku) }}">Edit</a> |
+        <a href="{{ url_for('products.list_products') }}">Back to List</a> |
+        <form method="POST" action="{{ url_for('products.delete_product', sku=product.sku) }}" style="display:inline;" onsubmit="return confirm('Are you sure?');">
+             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+             <button type="submit">Delete</button>
+         </form>
+    </p>
+</body>
+</html>
