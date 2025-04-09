@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head><title>{{ title }}</title></head>
+<body>
+    <h1>{{ title }}</h1>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %} <div class="alert-{{ category }}">{{ message }}</div> {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="" novalidate>
+        {{ form.hidden_tag() }} <p>{{ form.sku.label }}<br>{{ form.sku(size=40) }}{% for error in form.sku.errors %}<span style="color:red;">[{{error}}]</span>{% endfor %}</p>
+        <p>{{ form.name.label }}<br>{{ form.name(size=60) }}{% for error in form.name.errors %}<span style="color:red;">[{{error}}]</span>{% endfor %}</p>
+        <p>{{ form.description.label }}<br>{{ form.description(rows=5, cols=60) }}{% for error in form.description.errors %}<span style="color:red;">[{{error}}]</span>{% endfor %}</p>
+        <p>{{ form.price.label }}<br>{{ form.price() }}{% for error in form.price.errors %}<span style="color:red;">[{{error}}]</span>{% endfor %}</p>
+        <p>{{ form.category.label }}<br>{{ form.category(size=40) }}{% for error in form.category.errors %}<span style="color:red;">[{{error}}]</span>{% endfor %}</p>
+        <p>{{ form.image_url.label }}<br>{{ form.image_url(size=60) }}{% for error in form.image_url.errors %}<span style="color:red;">[{{error}}]</span>{% endfor %}</p>
+        <p>{{ form.stock_quantity.label }}<br>{{ form.stock_quantity() }}{% for error in form.stock_quantity.errors %}<span style="color:red;">[{{error}}]</span>{% endfor %}</p>
+        <p>{{ form.is_active() }} {{ form.is_active.label }}</p>
+        <p>{{ form.submit() }} <a href="{{ url_for('products.list_products') }}">Cancel</a></p>
+    </form>
+</body>
+</html>
